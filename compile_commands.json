@@ -1,7 +1,0 @@
-[
-    {
-        "directory": "C:/Users/herew/Documents/GitHub/code-of-babel/",
-        "command": "gcc -std=c2x -Wall -lm -o lob main.c",
-        "file": "main.c"
-    }
-]

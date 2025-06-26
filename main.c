@@ -4,7 +4,6 @@
 #include <time.h>
 #include <string.h>
 #include <limits.h>
-#include <pthread.h>
 #include <gmp.h>
 
 #include "./hex.c"
@@ -35,37 +34,39 @@ int prime(int n) {
     return 2;
 }
 
-
-unsigned long long getseed(char *argv[]) {
-    unsigned long long seed;
+mpz_t* getseed(char *argv[]) {
+    mpz_t *seed = malloc(sizeof(mpz_t));
+    mpz_init(*seed);
+    
     char path[50];
     strcpy(path, argv[0]);
     path[strlen(path)-7] = '\0';
     strcat(path, "seed.txt");
-    // Open a file in read mode
+    
     FILE *fptr = fopen(path, "r");
-    // Print some text if the file does not exist
     if (fptr == NULL) {
         printf("Not able to open the seed file. Creating a new one instead...\n");
         fptr = fopen(path, "w");
-        seed = prime(rand());// find the closest prime number
-        fprintf(fptr, "%lld", seed);
+        
+        mpz_ui_pow_ui(*seed, 2, 64);  // Set seed to 2^64
+        mpz_prevprime(*seed, *seed);   // Find next prime number
+        gmp_fprintf(fptr, "%Zd", *seed);
     } else {
-        fscanf(fptr, "%llu", &seed);
+        gmp_fscanf(fptr, "%Zd", *seed);
     }
-    // Close the file
     fclose(fptr);
     return seed;
 }
 
-
 int main(int argc, char *argv[]) {
     srand(time(NULL));
-    unsigned long long seed = getseed(argv);
+    mpz_t *seed = getseed(argv);
+    
+    
 
     printf(" __\n");
     printf("/  \\ The Library of Babel by pyrokn8\n");
-    printf("\\__/ Current seed: %llu\n\n",seed);
+    gmp_printf("\\__/ Current seed: %Zd\n\n", *seed);
 
     if (argc < 2) {
         printf("You have not entered any arguments...\n");
@@ -96,7 +97,7 @@ int main(int argc, char *argv[]) {
         if (argv[2][1] == 'x') {
             key = hextolong(argv[2]);// Convert string hexadecimal input to unsigned long long
         } else {
-            key = strtoull(argv[2], nullptr, 10); // Convert string number to unsigned long long
+            key = strtoull(argv[2], NULL, 10); // Convert string number to unsigned long long
         }
         // printf("Input Key: %llu\n", key);
         if (key > ULLONG_MAX-1 || key == 0) {
