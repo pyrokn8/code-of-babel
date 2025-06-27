@@ -5,11 +5,13 @@
 #include <string.h>
 #include <limits.h>
 #include <gmp.h>
+#include <assert.h>
 
-#include "./hex.c"
+#include "./convert.c"
 #include "./help.c"
 #include "./searchwithkey.c"
 #include "./searchwithtext.c"
+#include "./randomsearch.c"
 
 int prime(int n) {
     // All prime numbers are odd except two
@@ -62,8 +64,6 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     mpz_t *seed = getseed(argv);
     
-    
-
     printf(" __\n");
     printf("/  \\ The Library of Babel by pyrokn8\n");
     gmp_printf("\\__/ Current seed: %Zd\n\n", *seed);
@@ -108,8 +108,9 @@ int main(int argc, char *argv[]) {
             free(line);
         }
     } else if (strcmp(argv[1], rand) == 0) {
-        // unsigned long long key = randomsearch();
-        // printf("Key: %llu\n", key);
+        char *line = randomsearch(seed);
+        printf("%s\n", line);
+        free(line);
     } else {
         printf("You have not entered any valid arguments...\n");
     }

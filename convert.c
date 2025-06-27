@@ -53,3 +53,32 @@ unsigned char hextobyte(char hex[3]) {
     }
     return byte;
 }
+
+unsigned long long mpztoull(mpz_t p) {
+    // Convert mpz to unsigned long long properly
+    assert(mpz_cmp_ui(p, 0) >= 0 && mpz_sizeinbase(p, 2) <= 64);
+    unsigned long long val = 0;
+    if (mpz_fits_ulong_p(p)) {
+        val = mpz_get_ui(p);
+    } else {
+        // Handle large numbers by extracting parts
+        mpz_t temp;
+        mpz_init(temp);
+        
+        // Get lower 32 bits
+        mpz_fdiv_r_2exp(temp, p, 32);
+        val = mpz_get_ui(temp);
+        
+        // Get upper 32 bits
+        mpz_fdiv_q_2exp(temp, p, 32);
+        val |= ((unsigned long long)mpz_get_ui(temp) << 32);
+        mpz_clear(temp);
+    }
+    return val;
+}
+
+
+void ulltompz(mpz_t result, unsigned long long val) {
+    // GMP representation: count = 1 value, order = -1 (LSB first), size = 8 bytes
+    mpz_import(result, 1, -1, sizeof(val), 0, 0, &val);
+}

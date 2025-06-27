@@ -1,32 +1,12 @@
 unsigned long long findk(unsigned long long i, const mpz_t p) {
-    mpz_t result, n;
-    mpz_inits(result, n, NULL);
+    mpz_t result, n, i_mpz;
+    mpz_inits(result, n, i_mpz, NULL);
     mpz_ui_pow_ui(n, 2, 64);// n is maximum possible unsigned long long integer type
-    mpz_mul_ui(result, p, i);
-    mpz_mod(result, result, n);
-
-    // Convert mpz to unsigned long long properly
-    unsigned long long val = 0;
-    if (mpz_fits_ulong_p(result)) {
-        val = mpz_get_ui(result);
-    } else {
-        // Handle large numbers by extracting parts
-        mpz_t temp;
-        mpz_init(temp);
-        
-        // Get lower 32 bits
-        mpz_fdiv_r_2exp(temp, result, 32);
-        val = mpz_get_ui(temp);
-        
-        // Get upper 32 bits
-        mpz_fdiv_q_2exp(temp, result, 32);
-        val |= ((unsigned long long)mpz_get_ui(temp) << 32);
-        mpz_clear(temp);
-    }
-
-    // return mpz_get_ui(result);
-    mpz_clears(result, n, NULL);
-    return val;
+    ulltompz(i_mpz, i); // Convert unsigned long long to mpz_t
+    mpz_mul(result, p, i_mpz);// result = i * p
+    mpz_mod(result, result, n);// k = i * p % n
+    return mpztoull(result);// Convert mpz to unsigned long long properly
+    mpz_clears(result, n, i_mpz, NULL);
 }
 /*
 I think p needs to be greater than n for better psudorandomness

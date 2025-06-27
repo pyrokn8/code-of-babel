@@ -1,62 +1,48 @@
 void modInverse(mpz_t result, const mpz_t p, const mpz_t n) {
-    mpz_t a, b, x0, x1, q, temp_a, temp_x0;
-    
-    mpz_inits(a, b, x0, x1, q, temp_a, temp_x0, NULL);
-    
+    mpz_t a, b, x0, x1, q, temp, temp2;
+    mpz_inits(a, b, x0, x1, q, temp, temp2, NULL);
+
     mpz_set(a, p);
     mpz_set(b, n);
     mpz_set_ui(x0, 1);
     mpz_set_ui(x1, 0);
-    
+
     while (mpz_cmp_ui(b, 0) != 0) {
-        mpz_fdiv_q(q, a, b);
-        
-        mpz_set(temp_a, a);
-        mpz_set(a, b);
-        mpz_mod(b, temp_a, b);
-        
-        mpz_set(temp_x0, x0);
+        mpz_fdiv_q(q, a, b); // q = a / b
+
+        // (a, b) = (b, a % b)
+        mpz_set(temp, b);
+        mpz_mod(b, a, b);
+        mpz_set(a, temp);
+
+        // (x0, x1) = (x1, x0 - q*x1)
+        mpz_mul(temp, q, x1);      // temp = q * x1
+        mpz_sub(temp2, x0, temp);  // temp2 = x0 - temp
         mpz_set(x0, x1);
-        mpz_mul(x1, q, x1);
-        mpz_sub(x1, temp_x0, x1);
+        mpz_set(x1, temp2);
     }
-    
-    // Ensure positive result
-    mpz_add(result, x0, n);
-    mpz_mod(result, result, n);
-    
-    mpz_clears(a, b, x0, x1, q, temp_a, temp_x0, NULL);
+
+    // Ensure result is positive
+    if (mpz_sgn(x0) < 0) {
+        mpz_add(x0, x0, n);
+    }
+
+    mpz_set(result, x0);
+
+    mpz_clears(a, b, x0, x1, q, temp, temp2, NULL);
 }
 
 unsigned long long findI(unsigned long long k, const mpz_t p) {
-    mpz_t result, n, pInv;
-    mpz_inits(result, n, pInv, NULL);
+    mpz_t result, n, pInv, k_mpz;
+    mpz_inits(result, n, pInv, k_mpz, NULL);
     mpz_ui_pow_ui(n, 2, 64);// n is maximum possible unsigned long long integer type
-    
+    ulltompz(k_mpz, k); // Convert unsigned long long to mpz_t
     modInverse(pInv, p, n);
-    mpz_mul_ui(result, pInv, k);
-    mpz_mod(result, result, n);
-    
-    // Convert mpz to unsigned long long properly
-    unsigned long long val = 0;
-    if (mpz_fits_ulong_p(result)) {
-        val = mpz_get_ui(result);
-    } else {
-        // Handle large numbers by extracting parts
-        mpz_t temp;
-        mpz_init(temp);
-        
-        // Get lower 32 bits
-        mpz_fdiv_r_2exp(temp, result, 32);
-        val = mpz_get_ui(temp);
-        
-        // Get upper 32 bits
-        mpz_fdiv_q_2exp(temp, result, 32);
-        val |= ((unsigned long long)mpz_get_ui(temp) << 32);
-        mpz_clear(temp);
-    }
-    mpz_clears(result, n, pInv, NULL);
-    return val;
+    mpz_mul(result, pInv, k_mpz);
+    mpz_mod(result, result, n);// i = (k * pow(p, -1, n)) % n
+    unsigned long long i = mpztoull(result);// Convert mpz to unsigned long long properly
+    mpz_clears(result, n, pInv, k_mpz, NULL);
+    return i;
 }
 
 unsigned long long randull() {
@@ -84,9 +70,15 @@ char *searchwithtext(char *text[3], unsigned short numberofbytes, mpz_t *seed) {
     k = randull();
 
     unsigned char *ptr = (unsigned char *)&k;
-    for (short i = randrang(numberofbytes-1, 8-1), j = 0; j < numberofbytes; i--, j++) {
+    for (short i = randrang(numberofbytes-1, 7), j = 0; j < numberofbytes; i--, j++) {
         ptr[i] = bytes[j];
     }
+
+    // k = 0;
+    // unsigned char *ptr = (unsigned char *)&k;
+    // for (short j = 0; j < numberofbytes; j++) {
+    //     ptr[j] = bytes[j];  // Embed into LSBs
+    // }
 
     i = findI(k, *seed);
 
