@@ -5,8 +5,9 @@ unsigned long long findk(unsigned long long i, const mpz_t p) {
     ulltompz(i_mpz, i); // Convert unsigned long long to mpz_t
     mpz_mul(result, p, i_mpz);// result = i * p
     mpz_mod(result, result, n);// k = i * p % n
-    return mpztoull(result);// Convert mpz to unsigned long long properly
+    unsigned long long k = mpztoull(result);// Convert mpz to unsigned long long properly
     mpz_clears(result, n, i_mpz, NULL);
+    return k;
 }
 /*
 I think p needs to be greater than n for better psudorandomness

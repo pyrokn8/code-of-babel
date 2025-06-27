@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     mpz_t *seed = getseed(argv);
     
     printf(" __\n");
-    printf("/  \\ The Library of Babel by pyrokn8\n");
+    printf("/  \\ The Code of Babel by pyrokn8\n");
     gmp_printf("\\__/ Current seed: %Zd\n\n", *seed);
 
     if (argc < 2) {
