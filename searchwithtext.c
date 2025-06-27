@@ -33,6 +33,9 @@ void modInverse(mpz_t result, const mpz_t p, const mpz_t n) {
 }
 
 unsigned long long findI(unsigned long long k, const mpz_t p) {
+    // https://en.wikipedia.org/wiki/Modular_multiplicative_inverse
+    // This function finds the value of i such that i = (k * pow(p, -1, n)) % n
+    // i = (k * p^-1) mod n
     mpz_t result, n, pInv, k_mpz;
     mpz_inits(result, n, pInv, k_mpz, NULL);
     mpz_ui_pow_ui(n, 2, 64);// n is maximum possible unsigned long long integer type
@@ -73,12 +76,6 @@ char *searchwithtext(char *text[3], unsigned short numberofbytes, mpz_t *seed) {
     for (short i = randrang(numberofbytes-1, 7), j = 0; j < numberofbytes; i--, j++) {
         ptr[i] = bytes[j];
     }
-
-    // k = 0;
-    // unsigned char *ptr = (unsigned char *)&k;
-    // for (short j = 0; j < numberofbytes; j++) {
-    //     ptr[j] = bytes[j];  // Embed into LSBs
-    // }
 
     i = findI(k, *seed);
 
