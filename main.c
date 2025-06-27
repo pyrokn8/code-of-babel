@@ -26,15 +26,11 @@ void randomprime(mpz_t *result) {
     mpz_clear(n);
 }
 
-mpz_t* getseed(char *argv[]) {
+mpz_t* getseed() {
     mpz_t *seed = malloc(sizeof(mpz_t));
     mpz_init(*seed);
     
-    char path[50];
-    strcpy(path, argv[0]);
-    path[strlen(path)-7] = '\0';
-    strcat(path, "seed.txt");
-    
+    const char path[11] = "./seed.txt\0";
     FILE *fptr = fopen(path, "r");
     if (fptr == NULL) {
         printf("Not able to open the seed file. Creating a new one instead...\n");
@@ -57,7 +53,7 @@ mpz_t* getseed(char *argv[]) {
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
-    mpz_t *seed = getseed(argv);
+    mpz_t *seed = getseed();
     
     printf(" __\n");
     printf("/  \\ The Code of Babel by pyrokn8\n");
