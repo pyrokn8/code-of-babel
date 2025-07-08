@@ -1,4 +1,6 @@
 void modInverse(mpz_t result, const mpz_t p, const mpz_t n) {
+    // Extended Euclidean algorithm to find the modular inverse of p mod n
+    // https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
     mpz_t a, b, x0, x1, q, temp, temp2;
     mpz_inits(a, b, x0, x1, q, temp, temp2, NULL);
 
@@ -35,6 +37,7 @@ void modInverse(mpz_t result, const mpz_t p, const mpz_t n) {
 unsigned long long findI(unsigned long long k, const mpz_t p) {
     // https://en.wikipedia.org/wiki/Modular_multiplicative_inverse
     // This function finds the value of i such that i = (k * pow(p, -1, n)) % n
+    // k = (i * p) mod n
     // i = (k * p^-1) mod n
     mpz_t result, n, pInv, k_mpz;
     mpz_inits(result, n, pInv, k_mpz, NULL);
@@ -89,5 +92,18 @@ char *searchwithtext(char *text[3], unsigned short numberofbytes, mpz_t *seed) {
         free(hex);
     }
     lineofcode[45] = '\0';
+    // write/append k to file code.bin
+    // experimental
+    // I will get make this better latter if my experiment works
+    // shush i know its bad
+    FILE *fptr = fopen("code.bin", "ab");
+    if (fptr == NULL) {
+        printf("Error opening file code.bin for writing.\n");
+        free(lineofcode);
+        return NULL;
+    }
+    fwrite(&k, sizeof(unsigned long long), 1, fptr);
+    fclose(fptr);
+
     return lineofcode;
 }
