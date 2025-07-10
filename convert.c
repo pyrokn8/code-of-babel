@@ -78,3 +78,40 @@ void ulltompz(mpz_t result, unsigned long long val) {
     // GMP representation: count = 1 value, order = -1 (LSB first), size = 8 bytes
     mpz_import(result, 1, -1, sizeof(val), 0, 0, &val);
 }
+
+char *disasseble(unsigned long long k) {
+    // Disassemble a 4-byte ARM instruction from an unsigned long long value
+    csh handle;
+    cs_insn *insn;
+    size_t count;
+    
+    if (cs_open(CS_ARCH_ARM, CS_MODE_ARM, &handle) != CS_ERR_OK) {
+        return "Error opening Capstone\n";
+    }
+    
+    unsigned char *code = (unsigned char *)&k;
+
+    count = cs_disasm(handle, code, sizeof(code), 0x0, 0, &insn);
+    if (count > 0) {
+        char *result = malloc(212);
+        for (short i = 0; i < 212; i++) {result[i] = '\0';}
+        
+        FILE *asmfile = fopen("code.asm", "a");
+		for (short j = 0; j < count; j++) {
+            char *temp = malloc(212);
+            snprintf(temp, 212, "\t%d: %s %s\n", j+1, insn[j].mnemonic, insn[j].op_str);
+            strcat(result, temp);
+            free(temp);
+            if (asmfile != NULL) {
+                fprintf(asmfile, "\t%s %s\n", insn[j].mnemonic, insn[j].op_str);
+            } 
+		}
+        fclose(asmfile);
+        cs_free(insn, count);
+        cs_close(&handle);
+        return result;
+    } else {
+        cs_close(&handle);
+        return "Failed to disassemble given code!\n"; // Failed to disassemble
+    }
+}

@@ -64,7 +64,7 @@ short randrang(short min, short max) {
     return (short)(rand() % (max - min + 1) + min);
 }
 
-char *searchwithtext(char *text[3], unsigned short numberofbytes, mpz_t *seed) {
+char *searchwithtext(char *text[3], unsigned short numberofbytes, mpz_t *seed, bool decompile, bool store) {
     unsigned long long k, i;
     unsigned char bytes[numberofbytes];
 
@@ -91,19 +91,20 @@ char *searchwithtext(char *text[3], unsigned short numberofbytes, mpz_t *seed) {
         strcat(lineofcode, " ");
         free(hex);
     }
-    lineofcode[45] = '\0';
-    // write/append k to file code.bin
-    // experimental
-    // I will get make this better latter if my experiment works
-    // shush i know its bad
-    FILE *fptr = fopen("code.bin", "ab");
-    if (fptr == NULL) {
-        printf("Error opening file code.bin for writing.\n");
-        free(lineofcode);
-        return NULL;
+    lineofcode[44] = '\n';
+    if (decompile) {
+        strcat(lineofcode, "\nAssembly Code Conversion:\n");
+        strcat(lineofcode, disasseble(k));
     }
-    fwrite(&k, sizeof(unsigned long long), 1, fptr);
-    fclose(fptr);
+    strcat(lineofcode, "\0");
+
+    if (store) {
+        FILE *fptr = fopen("code.bin", "ab");
+        if (fptr != NULL) {
+            fwrite(&k, sizeof(unsigned long long), 1, fptr);
+        }
+        fclose(fptr);
+    }
 
     return lineofcode;
 }

@@ -4,8 +4,9 @@
 #include <time.h>
 #include <string.h>
 #include <limits.h>
-#include <gmp.h>
 #include <assert.h>
+#include <gmp.h>
+#include <capstone/capstone.h>
 
 #include "./convert.c"
 #include "./help.c"
@@ -30,11 +31,10 @@ mpz_t* getseed() {
     mpz_t *seed = malloc(sizeof(mpz_t));
     mpz_init(*seed);
     
-    const char path[11] = "./seed.txt\0";
-    FILE *fptr = fopen(path, "r");
+    FILE *fptr = fopen("./seed.txt", "r");
     if (fptr == NULL) {
         printf("Not able to open the seed file. Creating a new one instead...\n");
-        fptr = fopen(path, "w");
+        fptr = fopen("./seed.txt", "w");
         mpz_t n, gcd;
         mpz_inits(n, gcd, NULL);
         mpz_ui_pow_ui(n, 2, 64);
@@ -68,6 +68,45 @@ int main(int argc, char *argv[]) {
     const char swt[5] = "-swt\0";
     const char swk[5] = "-swk\0";
     const char rand[3] = "-r\0";
+    const char assembly[5] = "-asm\0";
+    const char save[6] = "-save\0";
+
+    bool decompile = false;
+    bool store = false;
+
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], assembly) == 0) {
+            decompile = true;
+            for (int j = i; j < argc - 1; j++) {
+                argv[j] = argv[j + 1];
+            }
+            argc--;
+        }
+        if (strcmp(argv[i], save) == 0) {
+            store = true;
+            for (int j = i; j < argc - 1; j++) {
+                argv[j] = argv[j + 1];
+            }
+            argc--;
+        }
+    }
+    // check/make if code.asm exists
+    if (decompile) {
+        FILE *asmfile = fopen("code.asm", "r");
+        if (asmfile == NULL) {
+            printf("code.asm does not exist. Creating a new one...\n");
+            asmfile = fopen("code.asm", "w");
+            fprintf(asmfile, ".global _start\n\n_start:\n");
+            if (asmfile == NULL) {
+                printf("Failed to create code.asm file.\n");
+                return 1;
+            }
+            fclose(asmfile);
+        } else {
+            fclose(asmfile);
+        }
+    }
+
     if (strcmp(argv[1], swt) == 0) {// search with text
         if (argc-2 > 8) {
             printf("You can't input that many hexadecimal numbers!");
@@ -77,7 +116,7 @@ int main(int argc, char *argv[]) {
                 bytes[i] = argv[i+2];
                 strcat(bytes[i], "\0");
             }
-            char *line = searchwithtext(bytes, (unsigned short)argc-2, seed);
+            char *line = searchwithtext(bytes, (unsigned short)argc-2, seed, decompile, store);
             printf("%s\n", line);
             free(line);
         }
@@ -88,11 +127,11 @@ int main(int argc, char *argv[]) {
         } else {
             key = strtoull(argv[2], NULL, 10); // Convert string number to unsigned long long
         }
-        char *line = searchwithkey(key, seed);
+        char *line = searchwithkey(key, seed, decompile, store);
         printf("%s\n", line);
         free(line);
     } else if (strcmp(argv[1], rand) == 0) {// random search
-        char *line = randomsearch(seed);
+        char *line = randomsearch(seed, decompile, store);
         printf("%s\n", line);
         free(line);
     } else {

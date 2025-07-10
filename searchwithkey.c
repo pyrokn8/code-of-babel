@@ -17,11 +17,12 @@ however this is not possible since n is at the 64 bit limit
 If you are reading this then you are cool :)
 */
 
-char *searchwithkey(unsigned long long key, mpz_t *seed) {
+char *searchwithkey(unsigned long long key, mpz_t *seed, bool decompile, bool store) {
     // https://youtu.be/WFFi9zVtvsw?t=308
     unsigned long long k = findk(key, *seed);
     unsigned char *ptr = (unsigned char *)&k;
-    char *lineofcode = malloc(19+2+24);
+    char *lineofcode = malloc(45+212);
+
     strcpy(lineofcode, longtohex(key));
     strcat(lineofcode, ": ");
     for (int index = 7; index >= 0; index--) {
@@ -30,7 +31,20 @@ char *searchwithkey(unsigned long long key, mpz_t *seed) {
         strcat(lineofcode, " ");
         free(hex);
     }
-    lineofcode[45] = '\0';
+    lineofcode[44] = '\n';
+    if (decompile) {
+        strcat(lineofcode, "\nAssembly Code Conversion:\n");
+        strcat(lineofcode, disasseble(k));
+    }
+    strcat(lineofcode, "\0");
+
+    if (store) {
+        FILE *fptr = fopen("code.bin", "ab");
+        if (fptr != NULL) {
+            fwrite(&k, sizeof(unsigned long long), 1, fptr);
+        }
+        fclose(fptr);
+    }
 
     return lineofcode;
 }
