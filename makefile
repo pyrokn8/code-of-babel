@@ -13,3 +13,4 @@ read:
 asm:
 	as code.asm -o code.o
 	ld code.o -o code
+	./code
