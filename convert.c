@@ -73,7 +73,6 @@ unsigned long long mpztoull(mpz_t p) {
     return val;
 }
 
-
 void ulltompz(mpz_t result, unsigned long long val) {
     // GMP representation: count = 1 value, order = -1 (LSB first), size = 8 bytes
     mpz_import(result, 1, -1, sizeof(val), 0, 0, &val);

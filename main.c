@@ -17,11 +17,11 @@
 void randomprime(mpz_t *result) {
     mpz_t n;
     mpz_init(n);
-    mpz_ui_pow_ui(n, 2, 64); // n is maximum possible unsigned long long integer type
+    mpz_ui_pow_ui(*result, 2, 64); // result is maximum possible unsigned long long integer type
 
     unsigned long long random_num = randull();// random number in the range [0, 2^64]
     ulltompz(n, random_num); // Convert unsigned long long to mpz_t    
-    mpz_set(*result, n);
+    mpz_add(*result, *result, n);
     mpz_nextprime(*result, *result);
 
     mpz_clear(n);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         return 1; 
     }
 
-    const char swt[5] = "-swt\0";
+    const char swt[5] = "-swt\0";// change these to search with code and search with index
     const char swk[5] = "-swk\0";
     const char rand[3] = "-r\0";
     const char assembly[5] = "-asm\0";
